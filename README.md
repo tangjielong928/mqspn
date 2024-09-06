@@ -2,7 +2,6 @@
 
 Code for the paper: "**Multi-Grained Query-Guided Set Prediction Network for Grounded Multimodal Named Entity Recognition**." ([Paper Link](https://arxiv.org/abs/2407.21033)).
 
-## Overview
 ![](./assets/mqspn.png)
 
 
