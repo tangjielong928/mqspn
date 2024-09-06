@@ -1,0 +1,37 @@
+{
+	"entities": {
+		"perso": {
+			"verbose": "perso",
+			"short": "perso"
+		},
+		"locatio": {
+			"verbose": "locatio",
+			"short": "locatio"
+		},
+		"buildin": {
+			"verbose": "buildin",
+			"short": "buildin"
+		},
+		"organizatio": {
+			"verbose": "organizatio",
+			"short": "organizatio"
+		},
+		"produc": {
+			"verbose": "produc",
+			"short": "produc"
+		},
+		"ar": {
+			"verbose": "ar",
+			"short": "ar"
+		},
+		"even": {
+			"verbose": "even",
+			"short": "even"
+		},
+		"othe": {
+			"verbose": "othe",
+			"short": "othe"
+		}
+	},
+	"relations": {}
+}

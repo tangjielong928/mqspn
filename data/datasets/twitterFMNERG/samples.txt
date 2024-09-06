@@ -1,0 +1,89 @@
+IMGID:16_05_01_36
+Louis	B-person	B-coach
+Van	I-person	I-coach
+Gaal	I-person	I-coach
+forgets	O	O
+who	O	O
+has	O	O
+won	O	O
+a	O	O
+Premier	B-organization	B-sports_league
+League	I-organization	I-sports_league
+in	O	O
+his	O	O
+squad	O	O
+
+IMGID:16_05_01_65
+Influencer	O	O
+Court	B-person	B-athlete
+Smith	I-person	I-athlete
+on	O	O
+her	O	O
+travels	O	O
+✈	O	O
+️	O	O
+When	O	O
+'	O	O
+s	O	O
+your	O	O
+next	O	O
+adventure	O	O
+?	O	O
+🌍	O	O
+#	O	O
+influencer	O	O
+
+IMGID:16_05_01_81
+@	O	O
+790	B-person	B-athlete
+Friedo	I-person	I-athlete
+Dragon	O	O
+was	O	O
+unleashed	O	O
+and	O	O
+dominated	O	O
+Game	O	O
+7	O	O
+along	O	O
+with	O	O
+the	O	O
+rest	O	O
+of	O	O
+the	O	O
+squad	O	O
+.	O	O
+That	O	O
+'	O	O
+s	O	O
+#	O	O
+Heat	B-organization	B-sports_team
+basketball	O	O
+!	O	O
+
+IMGID:16_05_01_100
+The	O	O
+Premier	B-organization	B-sports_league
+Leagues	I-organization	I-sports_league
+battle	O	O
+for	O	O
+#	O	O
+ChampionsLeague	B-event	B-sports_event
+,	O	O
+Europa	B-event	B-sports_event
+qualifying	O	O
+
+IMGID:16_05_01_113
+@	O	O
+NFL	B-organization	B-sports_league
+13	O	O
+yr	O	O
+old	O	O
+girl	O	O
+in	O	O
+final	O	O
+wish	O	O
+for	O	O
+message	O	O
+from	O	O
+@	O	O
+katyperry	B-person	B-musician
