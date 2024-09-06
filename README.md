@@ -31,9 +31,9 @@ We use publicly released datasets [Twitter-GMNER](https://github.com/NUSTM/GMNER
 
 ```bash
 |----datasets\
-    |----images_annotation # annotation xml file
+    |----images_annotation # annotation xml file here
     |----Vinvl_detection_path # candidate regions for twitter15 and twitter17 here
-    |----twitterGMNER # original raw text with BIO annotations
+    |----twitterGMNER # original raw text with BIO annotations 
     |    |----twitter10k_types.json
     |    |----dev.txt
     |    |----samples.txt
