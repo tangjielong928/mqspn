@@ -428,12 +428,12 @@ class JsonInputReader(BaseInputReader):
                     aspects.append(box_name)
                     gt_boxes.append([xmin, ymin, xmax, ymax])
             assert len(aspects) == len(gt_boxes)
-            bounding_boxes = np.zeros((7, 4), dtype=np.float32)
-            image_feature = np.zeros((7, 2048), dtype=np.float32)
+            bounding_boxes = np.zeros((8, 4), dtype=np.float32)
+            image_feature = np.zeros((8, 2048), dtype=np.float32)
             img_path = os.path.join(self.detection_path, img_id + '.jpg.npz')
             crop_img = np.load(img_path)
             image_num = crop_img['num_boxes']
-            final_num = min(image_num, 7)
+            final_num = min(image_num, 8)
             bounding_boxes[:final_num] = crop_img['bounding_boxes'][:final_num]
             image_feature_ = crop_img['box_features']
             if normalize:
@@ -456,12 +456,12 @@ class JsonInputReader(BaseInputReader):
         for img_id in tqdm(imags_list, desc="Parsing image..."):
             if img_id not in xml_img_list:
                 res_dict[img_id] = {"bbox": [], "aspect": [], "box_features": []}
-                bounding_boxes = np.zeros((7, 4), dtype=np.float32)
-                image_feature = np.zeros((7, 2048), dtype=np.float32)
+                bounding_boxes = np.zeros((8, 4), dtype=np.float32)
+                image_feature = np.zeros((8, 2048), dtype=np.float32)
                 img_path = os.path.join(self.detection_path, img_id + '.jpg.npz')
                 crop_img = np.load(img_path)
                 image_num = crop_img['num_boxes']
-                final_num = min(image_num, 7)
+                final_num = min(image_num, 8)
                 bounding_boxes[:final_num] = crop_img['bounding_boxes'][:final_num]
                 image_feature_ = crop_img['box_features']
                 if normalize:
