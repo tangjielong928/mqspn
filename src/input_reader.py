@@ -396,9 +396,6 @@ class JsonInputReader(BaseInputReader):
             seg_encoding += [1] * len(token_encoding)
             token_encoding_char += [char_vocab.index('<EOT>')]
             char_encoding.append(token_encoding_char)
-            # except:
-            #     print(jtokens)
-        
         for token_phrase in rtokens:
             token_encoding = self._tokenizer.encode(token_phrase, add_special_tokens=False)
             doc_encoding += token_encoding
@@ -409,22 +406,7 @@ class JsonInputReader(BaseInputReader):
 
         return doc_tokens, doc_encoding, char_encoding, seg_encoding
 
-    def _parse_entities(self, jentities, doc_tokens, dataset, mapping_region) -> List[Entity]:
-        entities = []
-
-        for entity_idx, jentity in enumerate(jentities):
-            entity_type = self._entity_types[jentity['type']]
-            start, end = jentity['start'], jentity['end']
-
-            # create entity mention
-            tokens = doc_tokens[start:end]
-            phrase = " ".join([t.phrase for t in tokens])
-            entity = dataset.create_entity(entity_type, tokens, phrase, mapping_region)
-            entities.append(entity)
-
-        return entities
-
-    def _parse_regions(self, iou_value=0.5, normalize=True):
+    def _parse_regions(self, iou_value=0.5, normalize=False):
         xmls = os.listdir(self.xml_path)
         res_dict = {}
         for xml in tqdm(xmls, desc="Parsing images."):
@@ -446,12 +428,12 @@ class JsonInputReader(BaseInputReader):
                     aspects.append(box_name)
                     gt_boxes.append([xmin, ymin, xmax, ymax])
             assert len(aspects) == len(gt_boxes)
-            bounding_boxes = np.zeros((8, 4), dtype=np.float32)
-            image_feature = np.zeros((8, 2048), dtype=np.float32)
+            bounding_boxes = np.zeros((7, 4), dtype=np.float32)
+            image_feature = np.zeros((7, 2048), dtype=np.float32)
             img_path = os.path.join(self.detection_path, img_id + '.jpg.npz')
             crop_img = np.load(img_path)
             image_num = crop_img['num_boxes']
-            final_num = min(image_num, 8
+            final_num = min(image_num, 7)
             bounding_boxes[:final_num] = crop_img['bounding_boxes'][:final_num]
             image_feature_ = crop_img['box_features']
             if normalize:
@@ -474,12 +456,12 @@ class JsonInputReader(BaseInputReader):
         for img_id in tqdm(imags_list, desc="Parsing image..."):
             if img_id not in xml_img_list:
                 res_dict[img_id] = {"bbox": [], "aspect": [], "box_features": []}
-                bounding_boxes = np.zeros((8, 4), dtype=np.float32)
-                image_feature = np.zeros((8, 2048), dtype=np.float32)
+                bounding_boxes = np.zeros((7, 4), dtype=np.float32)
+                image_feature = np.zeros((7, 2048), dtype=np.float32)
                 img_path = os.path.join(self.detection_path, img_id + '.jpg.npz')
                 crop_img = np.load(img_path)
                 image_num = crop_img['num_boxes']
-                final_num = min(image_num, 8)
+                final_num = min(image_num, 7)
                 bounding_boxes[:final_num] = crop_img['bounding_boxes'][:final_num]
                 image_feature_ = crop_img['box_features']
                 if normalize:
@@ -491,7 +473,22 @@ class JsonInputReader(BaseInputReader):
                     res_dict[img_id]["aspect"].append("N")
             assert len(res_dict[img_id]["bbox"]) == len(res_dict[img_id]["aspect"])
         return res_dict
+    
+    def _parse_entities(self, jentities, doc_tokens, dataset, mapping_region) -> List[Entity]:
+        entities = []
 
+        for entity_idx, jentity in enumerate(jentities):
+            entity_type = self._entity_types[jentity['type']]
+            start, end = jentity['start'], jentity['end']
+
+            # create entity mention
+            tokens = doc_tokens[start:end]
+            phrase = " ".join([t.phrase for t in tokens])
+            entity = dataset.create_entity(entity_type, tokens, phrase, mapping_region)
+            entities.append(entity)
+
+        return entities
+        
     def _parse_relations(self, jrelations, entities, dataset) -> List[Relation]:
         relations = []
 
