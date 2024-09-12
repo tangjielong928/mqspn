@@ -406,7 +406,7 @@ class JsonInputReader(BaseInputReader):
 
         return doc_tokens, doc_encoding, char_encoding, seg_encoding
 
-    def _parse_regions(self, iou_value=0.5, normalize=False):
+    def _parse_regions(self, iou_value=0.5, normalize=True):
         xmls = os.listdir(self.xml_path)
         res_dict = {}
         for xml in tqdm(xmls, desc="Parsing images."):
