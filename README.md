@@ -25,7 +25,7 @@ We use publicly released datasets [Twitter-GMNER](https://github.com/NUSTM/GMNER
 
   - The preprocessed CoNLL format files are provided in this repo data file. For each tweet, the first line is its image id, and the following lines are its textual contents.
   - Download each tweet's associated images via this [link](https://drive.google.com/file/d/1PpvvncnQkgDNeBMKVgG2zFYuRhbL873g/view). 
-  - Following  [H-Index](https://github.com/NUSTM/GMNER/tree/main) , we utilize open-sourced [VinVL](https://github.com/pzzhang/VinVL) as class-agnostic RPN to identify all the candidate regions. To make MQSPN training efficient, we execute it in an individual process and store pre-detection results under the folder named "Vinvl_detection_path". The features and regions extracted by VinVL can be found at [this](https://drive.google.com/drive/folders/1w7W4YYeIE6bK2lAfqRtuwxH-tNqAytiK).
+  - Following  [H-Index](https://github.com/NUSTM/GMNER/tree/main) , we utilize open-sourced [VinVL](https://github.com/pzzhang/VinVL) as class-agnostic RPN to identify all the candidate regions. To make MQSPN training efficient, we execute it in an individual process and store pre-detection results under the folder named "Vinvl_detection_path". The features and regions extracted by VinVL can be found at [Google Drive](https://drive.google.com/file/d/1N--M9-qHQdr_16vabXR53UJnZo7iTIPr/view?usp=sharing) and [Baidu Netdisk](https://pan.baidu.com/s/1nhRB-ulju7xZ9Ajsc_b7og) (extract code: kr7t).
   - Please place the corresponding files as the following structure in the data file:
 
 ```bash
