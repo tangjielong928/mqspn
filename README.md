@@ -20,7 +20,7 @@ pip install -r requirements.txt
 ```
 ### Datasets
 
-We use publicly released datasets [Twitter-GMNER](https://github.com/NUSTM/GMNER) and  [Twitter-FMNERG](https://github.com/NUSTM/GMNER) to train and evaluate our proposed model. You can find datasets' detailed information from their original papers:
+We use publicly released datasets [Twitter-GMNER](https://github.com/NUSTM/GMNER) and  [Twitter-FMNERG](https://github.com/NUSTM/FMNERG) to train and evaluate our proposed model. You can find datasets' detailed information from their original papers:
 
 
   - The preprocessed CoNLL format files are provided in this repo data file. For each tweet, the first line is its image id, and the following lines are its textual contents.
