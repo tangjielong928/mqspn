@@ -446,12 +446,12 @@ class JsonInputReader(BaseInputReader):
                     aspects.append(box_name)
                     gt_boxes.append([xmin, ymin, xmax, ymax])
             assert len(aspects) == len(gt_boxes)
-            bounding_boxes = np.zeros((6, 4), dtype=np.float32)
-            image_feature = np.zeros((6, 2048), dtype=np.float32)
+            bounding_boxes = np.zeros((8, 4), dtype=np.float32)
+            image_feature = np.zeros((8, 2048), dtype=np.float32)
             img_path = os.path.join(self.detection_path, img_id + '.jpg.npz')
             crop_img = np.load(img_path)
             image_num = crop_img['num_boxes']
-            final_num = min(image_num, 6)
+            final_num = min(image_num, 8
             bounding_boxes[:final_num] = crop_img['bounding_boxes'][:final_num]
             image_feature_ = crop_img['box_features']
             if normalize:
@@ -460,7 +460,6 @@ class JsonInputReader(BaseInputReader):
             for aspect, gt_box in zip(aspects, gt_boxes):
                 IoUs = (torchvision.ops.box_iou(torch.tensor([gt_box]), torch.tensor(bounding_boxes))).numpy()  # (1,x)
                 IoU = IoUs[0]
-                flag = 0
                 for i, iou in enumerate(IoU):
                     if len(res_dict[img_id]["bbox"]) == 0 or not np.any(
                             np.all(bounding_boxes[i] == res_dict[img_id]["bbox"], axis=1)):
@@ -469,23 +468,18 @@ class JsonInputReader(BaseInputReader):
                         res_dict[img_id]["aspect"].append("N")
                     if iou >= iou_value:
                         res_dict[img_id]["aspect"][i] = aspect
-                        flag = 1
-                if flag == 0:
-                    res_dict[img_id]["bbox"].append(gt_box)
-                    res_dict[img_id]["aspect"].append(aspect)
-                    res_dict[img_id]["box_features"].append([0] * 2048)
             assert len(res_dict[img_id]["bbox"]) == len(res_dict[img_id]["aspect"])
         imags_list = [x.split('.')[0] for x in os.listdir(self.detection_path)]
         xml_img_list = [x.split('.')[0] for x in xmls]
         for img_id in tqdm(imags_list, desc="Parsing image..."):
             if img_id not in xml_img_list:
                 res_dict[img_id] = {"bbox": [], "aspect": [], "box_features": []}
-                bounding_boxes = np.zeros((6, 4), dtype=np.float32)
-                image_feature = np.zeros((6, 2048), dtype=np.float32)
+                bounding_boxes = np.zeros((8, 4), dtype=np.float32)
+                image_feature = np.zeros((8, 2048), dtype=np.float32)
                 img_path = os.path.join(self.detection_path, img_id + '.jpg.npz')
                 crop_img = np.load(img_path)
                 image_num = crop_img['num_boxes']
-                final_num = min(image_num, 6)
+                final_num = min(image_num, 8)
                 bounding_boxes[:final_num] = crop_img['bounding_boxes'][:final_num]
                 image_feature_ = crop_img['box_features']
                 if normalize:
