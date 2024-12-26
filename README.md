@@ -1,6 +1,6 @@
 # MQSPN
 
-Code for the paper: "**Multi-Grained Query-Guided Set Prediction Network for Grounded Multimodal Named Entity Recognition**." ([Paper Link](https://arxiv.org/abs/2407.21033)).
+Code for the paper accepted by AAAI 2025: "**Multi-Grained Query-Guided Set Prediction Network for Grounded Multimodal Named Entity Recognition**." ([Paper Link](https://arxiv.org/abs/2407.21033)).
 
 ![](./assets/mqspn.png)
 
