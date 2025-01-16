@@ -70,7 +70,7 @@ python run.py eval --config configs/twitterFMNERG_eval.conf
 ```
 ## Acknowledgements
 
-The datasets we used are from  [Yu et al.](https://github.com/NUSTM/GMNER/tree/main) and  [Wang et al.](https://github.com/NUSTM/FMNERG). Some codes are based on the open-sourced codes  [PIQN](https://github.com/tricktreat/piqn) and  [MKGFormer](https://github.com/zjunlp/MKGformer). Thanks for their great works!
+The datasets we used are from  [Yu et al.](https://github.com/NUSTM/GMNER/tree/main) and  [Wang et al.](https://github.com/NUSTM/FMNERG). Some codes are based on the open-sourced codes  [PIQN](https://github.com/tricktreat/piqn), [DQSetGen](https://github.com/zjunlp/DQSetGen) and  [MKGFormer](https://github.com/zjunlp/MKGformer). Thanks for their great works!
 
 ## Citation
 ```bibtex
