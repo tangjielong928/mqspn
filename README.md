@@ -32,13 +32,7 @@ We use publicly released datasets [Twitter-GMNER](https://github.com/NUSTM/GMNER
 |----datasets\
     |----images_annotation # annotation xml file here
     |----Vinvl_detection_path # candidate regions for twitter15 and twitter17 here
-    |----twitterGMNER # original raw text with BIO annotations 
-    |    |----twitter10k_types.json
-    |    |----dev.txt
-    |    |----samples.txt
-    |    |----train.txt
-    |    |----test.txt
-    |----twitterFMNERG # original raw text with BIO annotations
+    |----twitter # original raw text with BIO annotations
     |    |----twitter10k_types.json
     |    |----dev.txt
     |    |----samples.txt
@@ -51,22 +45,12 @@ We use publicly released datasets [Twitter-GMNER](https://github.com/NUSTM/GMNER
 ## Usage
 
 ### Train for MQSPN
-- For TwitterGMNER dataset:
 ```bash
-python run.py train --config configs/twitterGMNER.conf
-```
-- For TwitterFMNERG dataset:
-```bash
-python run.py train --config configs/twitterFMNERG.conf
+python run.py train --config configs/twitter.conf
 ```
 ### Evaluation 
-- For TwitterGMNER dataset:
 ```bash
-python run.py eval --config configs/twitterGMNER_eval.conf
-```
-- For TwitterFMNERG dataset:
-```bash
-python run.py eval --config configs/twitterFMNERG_eval.conf
+python run.py eval --config configs/twitter_eval.conf
 ```
 ## Acknowledgements
 
