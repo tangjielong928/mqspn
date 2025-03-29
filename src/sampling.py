@@ -41,7 +41,7 @@ def create_vision_train_sample(img_path, region_path, mapping_region, transform=
             region_mask = [1] * path_num
         region_mask = torch.tensor(region_mask, dtype=torch.bool)
         aux_imgs = torch.stack(aux_imgs, dim=0)
-        assert len(aux_imgs) == path_num
+        assert len(aux_imgs) == path_num == len(region_mask)
 
         return image, aux_imgs, region_mask
 
@@ -128,11 +128,6 @@ def create_train_sample(doc, random_mask = False, tokenizer = None, repeat_gt_en
 
     if repeat_gt_entities != -1:
         if len(doc.entities)!=0: #有实体, region index 0 is for ungroundable
-            # k = repeat_gt_entities//len(doc.entities)
-            # m = repeat_gt_entities%len(doc.entities)
-            # gt_entities_spans_token = gt_entities_spans_token*k + gt_entities_spans_token[:m]
-            # gt_entity_types = gt_entity_types*k + gt_entity_types[:m]
-            # gt_entity_masks = gt_entity_masks*k + gt_entity_masks[:m]
             new_list = []
             for entity, type, region, mask in zip(gt_entities_spans_token, gt_entity_types, gt_entity_regions, gt_entity_masks):
                 if len(region)==0:
@@ -141,6 +136,8 @@ def create_train_sample(doc, random_mask = False, tokenizer = None, repeat_gt_en
                     for i in region:
                         if i['region_index']<path_num:
                             new_list.append([entity, type, i['region_index'], mask])
+                    if len(new_list)==0:
+                        new_list.append([entity, type, 0, mask])
             k = repeat_gt_entities//len(new_list)
             m = repeat_gt_entities % len(new_list)
             new_list = new_list*k + new_list[:m]
@@ -149,8 +146,6 @@ def create_train_sample(doc, random_mask = False, tokenizer = None, repeat_gt_en
             gt_entity_regions = [x[2] for x in new_list]
             gt_entity_masks = [x[3] for x in new_list]
             assert len(gt_entities_spans_token) == len(gt_entity_types) == len(gt_entity_masks) == len(gt_entity_regions) == repeat_gt_entities
-
-
 
     # create tensors
     # token indices
