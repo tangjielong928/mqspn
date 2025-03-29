@@ -27,7 +27,7 @@ from collections import Counter
 
 class BaseInputReader(ABC):
     def __init__(self, types_path: str, xml_path: str, detection_path: str, tokenizer: BertTokenizer, logger: Logger = None, random_mask_word = None, repeat_gt_entities = None,
-                 transform= None, clip_processor=None, aux_processor=None, rcnn_processor=None, image_path = None, aux_size=None, rcnn_size=None, path_num = None):
+                 transform= None, candidate_num = None, clip_processor=None, aux_processor=None, rcnn_processor=None, image_path = None, aux_size=None, rcnn_size=None, path_num = None):
 
         types = json.load(open(types_path), object_pairs_hook=OrderedDict, )  # entity + relation types
         self._entity_types = OrderedDict()
@@ -39,6 +39,7 @@ class BaseInputReader(ABC):
         self.clip_processor = clip_processor
         self.aux_processor = aux_processor
         self.rcnn_processor = rcnn_processor
+        self.candidate_num = candidate_num
         self.aux_size = aux_size
         self.rcnn_size = rcnn_size
         self.transform = transform
@@ -153,7 +154,7 @@ class BaseInputReader(ABC):
 
 class JsonInputReader(BaseInputReader):
     def __init__(self, types_path: str, xml_path: str, detection_path: str, tokenizer: BertTokenizer, logger: Logger = None, wordvec_filename = None, random_mask_word = False,
-                 use_glove = False, use_pos = False, repeat_gt_entities = None,
+                 use_glove = False, use_pos = False, repeat_gt_entities = None, candidate_num = None,
                  transform= None, clip_processor=None, aux_processor=None, rcnn_processor=None, image_path = None, aux_size=None, rcnn_size=None, path_num = None):
         super().__init__(types_path, xml_path, detection_path, tokenizer, logger, random_mask_word, repeat_gt_entities)
         if use_glove:
@@ -188,6 +189,7 @@ class JsonInputReader(BaseInputReader):
         self.clip_processor = clip_processor
         self.aux_processor = aux_processor
         self.rcnn_processor = rcnn_processor
+        self.candidate_num = candidate_num
         self.aux_size = aux_size
         self.rcnn_size = rcnn_size
         self.transform = transform
@@ -195,7 +197,7 @@ class JsonInputReader(BaseInputReader):
         self.path_num = path_num
         self.xml_path = xml_path
         self.detection_path = detection_path
-        self.mapping_regions = self._parse_regions()
+        self.mapping_regions = self._parse_regions(candidate_num)
 
     def load_wordvec(self, filename):
         self.embedding_weight = np.random.rand(len(self.word2inx),len(next(iter(self.word2vec.values()))))
@@ -306,11 +308,6 @@ class JsonInputReader(BaseInputReader):
                 "entities": entities,
                 "mapping_region": self.mapping_regions[img_id.split('.')[0]]
             })
-        # res_label = {"entities": {}, "relations": {}}
-        # for item in label_set:
-        #     res_label["entities"].update({
-        #         item: {"verbose": item, "short": item}
-        #     })
         return res
 
     def _parse_document(self, doc, dataset) -> Document:
@@ -396,6 +393,9 @@ class JsonInputReader(BaseInputReader):
             seg_encoding += [1] * len(token_encoding)
             token_encoding_char += [char_vocab.index('<EOT>')]
             char_encoding.append(token_encoding_char)
+            # except:
+            #     print(jtokens)
+        
         for token_phrase in rtokens:
             token_encoding = self._tokenizer.encode(token_phrase, add_special_tokens=False)
             doc_encoding += token_encoding
@@ -406,7 +406,22 @@ class JsonInputReader(BaseInputReader):
 
         return doc_tokens, doc_encoding, char_encoding, seg_encoding
 
-    def _parse_regions(self, iou_value=0.5, normalize=True):
+    def _parse_entities(self, jentities, doc_tokens, dataset, mapping_region) -> List[Entity]:
+        entities = []
+
+        for entity_idx, jentity in enumerate(jentities):
+            entity_type = self._entity_types[jentity['type']]
+            start, end = jentity['start'], jentity['end']
+
+            # create entity mention
+            tokens = doc_tokens[start:end]
+            phrase = " ".join([t.phrase for t in tokens])
+            entity = dataset.create_entity(entity_type, tokens, phrase, mapping_region)
+            entities.append(entity)
+
+        return entities
+
+    def _parse_regions(self, can_num, iou_value=0.5, normalize=False):
         xmls = os.listdir(self.xml_path)
         res_dict = {}
         for xml in tqdm(xmls, desc="Parsing images."):
@@ -428,12 +443,12 @@ class JsonInputReader(BaseInputReader):
                     aspects.append(box_name)
                     gt_boxes.append([xmin, ymin, xmax, ymax])
             assert len(aspects) == len(gt_boxes)
-            bounding_boxes = np.zeros((8, 4), dtype=np.float32)
-            image_feature = np.zeros((8, 2048), dtype=np.float32)
+            bounding_boxes = np.zeros((can_num, 4), dtype=np.float32)
+            image_feature = np.zeros((can_num, 2048), dtype=np.float32)
             img_path = os.path.join(self.detection_path, img_id + '.jpg.npz')
             crop_img = np.load(img_path)
             image_num = crop_img['num_boxes']
-            final_num = min(image_num, 8)
+            final_num = min(image_num, can_num)
             bounding_boxes[:final_num] = crop_img['bounding_boxes'][:final_num]
             image_feature_ = crop_img['box_features']
             if normalize:
@@ -456,12 +471,12 @@ class JsonInputReader(BaseInputReader):
         for img_id in tqdm(imags_list, desc="Parsing image..."):
             if img_id not in xml_img_list:
                 res_dict[img_id] = {"bbox": [], "aspect": [], "box_features": []}
-                bounding_boxes = np.zeros((8, 4), dtype=np.float32)
-                image_feature = np.zeros((8, 2048), dtype=np.float32)
+                bounding_boxes = np.zeros((can_num, 4), dtype=np.float32)
+                image_feature = np.zeros((can_num, 2048), dtype=np.float32)
                 img_path = os.path.join(self.detection_path, img_id + '.jpg.npz')
                 crop_img = np.load(img_path)
                 image_num = crop_img['num_boxes']
-                final_num = min(image_num, 8)
+                final_num = min(image_num, can_num)
                 bounding_boxes[:final_num] = crop_img['bounding_boxes'][:final_num]
                 image_feature_ = crop_img['box_features']
                 if normalize:
@@ -473,22 +488,7 @@ class JsonInputReader(BaseInputReader):
                     res_dict[img_id]["aspect"].append("N")
             assert len(res_dict[img_id]["bbox"]) == len(res_dict[img_id]["aspect"])
         return res_dict
-    
-    def _parse_entities(self, jentities, doc_tokens, dataset, mapping_region) -> List[Entity]:
-        entities = []
 
-        for entity_idx, jentity in enumerate(jentities):
-            entity_type = self._entity_types[jentity['type']]
-            start, end = jentity['start'], jentity['end']
-
-            # create entity mention
-            tokens = doc_tokens[start:end]
-            phrase = " ".join([t.phrase for t in tokens])
-            entity = dataset.create_entity(entity_type, tokens, phrase, mapping_region)
-            entities.append(entity)
-
-        return entities
-        
     def _parse_relations(self, jrelations, entities, dataset) -> List[Relation]:
         relations = []
 
