@@ -195,7 +195,7 @@ class MQSPNTrainer(BaseTrainer):
 
         # read datasets
         input_reader = input_reader_cls(types_path,args.xml_path, args.detection_path, self._tokenizer, self._logger, wordvec_filename = args.wordvec_path, random_mask_word = args.use_masked_lm,
-                                        use_glove = args.use_glove, use_pos = args.use_pos, repeat_gt_entities = args.repeat_gt_entities,
+                                        use_glove = args.use_glove, use_pos = args.use_pos, repeat_gt_entities = args.repeat_gt_entities, candidate_num = args.candidate_regions_num,
                                         transform= self.transform, clip_processor=self.clip_processor, aux_processor=self.aux_processor,
                                         rcnn_processor=self.rcnn_processor, image_path = self.image_path, aux_size=self.aux_size, rcnn_size=self.rcnn_size, path_num = self.path_num)
         input_reader.read({train_label: train_path, valid_label: valid_path})
@@ -294,7 +294,7 @@ class MQSPNTrainer(BaseTrainer):
                                         random_mask_word=args.use_masked_lm,
                                         use_glove=args.use_glove, use_pos=args.use_pos,
                                         repeat_gt_entities=args.repeat_gt_entities,
-                                        transform=self.transform, clip_processor=self.clip_processor,
+                                        transform=self.transform, candidate_num = args.candidate_regions_num, clip_processor=self.clip_processor,
                                         aux_processor=self.aux_processor,
                                         rcnn_processor=self.rcnn_processor, image_path=self.image_path,
                                         aux_size=self.aux_size, rcnn_size=self.rcnn_size, path_num=self.path_num)
@@ -471,5 +471,3 @@ class MQSPNTrainer(BaseTrainer):
                                   data={'lr': ['lr', 'epoch', 'iteration', 'global_iteration'],
                                         'loss': ['loss', 'epoch', 'iteration', 'global_iteration'],
                                         'loss_avg': ['loss_avg', 'epoch', 'iteration', 'global_iteration']})
-
-
