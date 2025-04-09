@@ -172,7 +172,7 @@ class Evaluator:
     def compute_scores(self):
         self._log("Evaluation")
         gt, pred = self._convert_by_setting(self._gt_entities, self._pred_entities, include_entity_types=True, include_region=True)
-        gmner_eval = self._score(gt, pred, print_results=True, flag=False)
+        gmner_eval = self._score(gt, pred, print_results=True)
         return gmner_eval
 
     def store_predictions(self):
@@ -188,8 +188,10 @@ class Evaluator:
                 entity_span = entity[:2]
                 span_tokens = util.get_span_tokens(tokens, entity_span)
                 entity_type = entity[2].identifier
+                entity_region = entity[3]
                 entity_phrase = str(util.get_span_tokens(doc.tokens, entity_span))
-                converted_entity = dict(type=entity_type, start=span_tokens[0].index, end=span_tokens[-1].index, phrase=entity_phrase)
+                converted_entity = dict(entity_type=entity_type, start=span_tokens[0].index, end=span_tokens[-1].index,
+                                        phrase=entity_phrase, region =entity_region, region_box = util.get_region_box(doc,entity_region))
                 gt_converted_entities.append(converted_entity)
             gt_converted_entities = sorted(gt_converted_entities, key=lambda e: e['start'])
 
@@ -201,23 +203,27 @@ class Evaluator:
                 # import pdb; pdb.set_trace()
                 span_tokens = util.get_span_tokens(tokens, entity_span)
                 entity_type = entity[2].identifier
+                entity_region = entity[3]
                 entity_phrase = str(util.get_span_tokens(doc.tokens, entity_span))
-                converted_entity = dict(type=entity_type, start=span_tokens[0].index, end=span_tokens[-1].index, phrase=entity_phrase)
+                converted_entity = dict(entity_type=entity_type, start=span_tokens[0].index, end=span_tokens[-1].index,
+                                        phrase=entity_phrase, region=entity_region, region_box = util.get_region_box(doc,entity_region))
                 pre_converted_entities.append(converted_entity)
             pre_converted_entities = sorted(pre_converted_entities, key=lambda e: e['start'])
 
-            doc_predictions = dict(tokens=[t.phrase for t in tokens], pre_entities=pre_converted_entities, gt_entities = gt_converted_entities)
+            doc_predictions = dict(tokens=[t.phrase for t in tokens], pre_entities=pre_converted_entities,
+                                   gt_entities = gt_converted_entities, image_id = doc.regions.image_id, candidate_regions = doc.regions.mapping_region['bbox'])
             predictions.append(doc_predictions)
 
         # store as json
         label, epoch = self._dataset_label, self._epoch
         with open(self._predictions_path % (label, epoch), 'w') as predictions_file:
             json.dump(predictions, predictions_file)
-        with open(self._predictions_path % ("raw_all", epoch), 'w') as predictions_file:
-            json.dump(self._raw_preds, predictions_file)
-        if len(self._raw_raw_preds) != 0:
-            with open(self._predictions_path % ("raw_raw_all", epoch), 'w') as predictions_file:
-                json.dump(self._raw_raw_preds, predictions_file)
+
+        # with open(self._predictions_path % ("raw_all", epoch), 'w') as predictions_file:
+        #     json.dump(self._raw_preds, predictions_file)
+        # if len(self._raw_raw_preds) != 0:
+        #     with open(self._predictions_path % ("raw_raw_all", epoch), 'w') as predictions_file:
+        #         json.dump(self._raw_raw_preds, predictions_file)
         # 
         raw_preds_match_gt = []
         raw_preds_not_match_gt = []
@@ -226,41 +232,31 @@ class Evaluator:
             
             def is_match(ent):
                 for gt_ent in gt:
-                    if ent["start"] == gt_ent[0] and  ent["end"] == gt_ent[1] and ent["entity_type"] == gt_ent[2].identifier:
+                    if ent["start"] == gt_ent[0] and  ent["end"] == gt_ent[1] and ent["entity_type"] == gt_ent[2].identifier and ent["region"] == gt_ent[3]:
                         return True
                 else:
                     return False
             # pre_match_gt = list(filter(is_match, pre))
             # pre_not_match_gt = list(filter(lambda a: not is_match(a), pre))
             # pre_not_match_gt = []
-            pre_not_match_gt = dict(tokens=[t.phrase for t in doc.tokens], entities=[], org_id= doc.doc_id)
-            no_dup_pre_match_gt = dict(tokens=[t.phrase for t in doc.tokens], entities=[], org_id= doc.doc_id)
+            no_dup_pre_not_match_gt = dict(tokens=[t.phrase for t in doc.tokens], pre_entities=[], image_id = doc.regions.image_id, candidate_regions = doc.regions.mapping_region['bbox'])
+            no_dup_pre_match_gt = dict(tokens=[t.phrase for t in doc.tokens], pre_entities=[], image_id = doc.regions.image_id, candidate_regions = doc.regions.mapping_region['bbox'])
             pre_match_gt_set = []
+            pre_not_match_gt = []
             # match gt need dedep; not match gt keep all
 
             for ent in pre["entities"]:
                 entity_span = (ent["start"], ent["end"])
                 ent["phrase"] = str(util.get_span_tokens(doc.tokens, entity_span))
                 if is_match(ent):
-                    if (ent["start"], ent["end"], ent["entity_type"]) not in pre_match_gt_set:
-                        pre_match_gt_set.append((ent["start"], ent["end"], ent["entity_type"]))
-                        no_dup_pre_match_gt["entities"].append(ent)
+                    if (ent["start"], ent["end"], ent["entity_type"], ent["region"]) not in pre_match_gt_set:
+                        pre_match_gt_set.append((ent["start"], ent["end"], ent["entity_type"], ent["region"]))
+                        no_dup_pre_match_gt["pre_entities"].append(ent)
                 else:
-                    pre_not_match_gt["entities"].append(ent)
-
-            # if len(pre_not_match_gt) > 0:
-            #     pre_not_match_gt.insert(0, [t.phrase for t in doc.tokens])
-            # if len(no_dup_pre_match_gt) > 0:
-            #     no_dup_pre_match_gt.insert(0, [t.phrase for t in doc.tokens])
-
-            raw_preds_not_match_gt.append(pre_not_match_gt)
-            # no_dup_pre_match_gt = []
-            # pre_match_gt_set = []
-            # for ent in pre_match_gt:
-            #     if (ent["start"], ent["end"], ent["entity_type"]) not in pre_match_gt_set:
-            #         pre_match_gt_set.append((ent["start"], ent["end"], ent["entity_type"]))
-            #         no_dup_pre_match_gt.append(ent)
-
+                    if (ent["start"], ent["end"], ent["entity_type"], ent["region"]) not in pre_not_match_gt:
+                        pre_not_match_gt.append((ent["start"], ent["end"], ent["entity_type"], ent["region"]))
+                        no_dup_pre_not_match_gt["pre_entities"].append(ent)
+            raw_preds_not_match_gt.append(no_dup_pre_not_match_gt)
             raw_preds_match_gt.append(no_dup_pre_match_gt)
         with open(self._predictions_path % ("match_gt", epoch), 'w') as predictions_file:
             json.dump(raw_preds_match_gt, predictions_file)
@@ -414,7 +410,7 @@ class Evaluator:
 
         return converted_gt, converted_pred
 
-    def _score(self, gt: List[List[Tuple]], pred: List[List[Tuple]], print_results: bool = False, cls_metric = False, flag = True):
+    def _score(self, gt: List[List[Tuple]], pred: List[List[Tuple]], print_results: bool = False, cls_metric = False):
         assert len(gt) == len(pred)
         # import pdb;pdb.set_trace()
 
@@ -432,8 +428,7 @@ class Evaluator:
             else:
                 union.update(sample_gt)
                 union.update(sample_pred)
-            if not flag:
-                sample_pred, union = collect(union, sample_pred, sample_gt)
+            sample_pred, union = collect(union, sample_pred, sample_gt)
             for s in union:
                 if s in sample_gt:
                     t = s[2]
@@ -448,10 +443,10 @@ class Evaluator:
                     types.add(t)
                 else:
                     pred_flat.append(0)
-        metrics = self._compute_metrics(gt_flat, pred_flat, types, print_results, flag = flag)
+        metrics = self._compute_metrics(gt_flat, pred_flat, types, print_results)
         return metrics
 
-    def _compute_metrics(self, gt_all, pred_all, types, print_results: bool = False, flag = True):
+    def _compute_metrics(self, gt_all, pred_all, types, print_results: bool = False):
         labels = [t.index for t in types]
         per_type = prfs(gt_all, pred_all, labels=labels, average=None)
         micro = prfs(gt_all, pred_all, labels=labels, average='micro')[:-1]
@@ -459,12 +454,12 @@ class Evaluator:
         total_support = sum(per_type[-1])
 
         if print_results:
-            self._print_results(per_type, list(micro) + [total_support], list(macro) + [total_support], types, flag = flag)
+            self._print_results(per_type, list(micro) + [total_support], list(macro) + [total_support], types)
 
         return [m * 100 for m in micro + macro]
 
 
-    def _print_results(self, per_type: List, micro: List, macro: List, types: List, flag = True):
+    def _print_results(self, per_type: List, micro: List, macro: List, types: List):
         columns = ('type', 'precision', 'recall', 'f1-score', 'support')
 
         row_fmt = "%20s" + (" %12s" * (len(columns) - 1))
@@ -481,11 +476,7 @@ class Evaluator:
             self._log(row_fmt % self._get_row(m, t.short_name))
 
         self._log('')
-
-        if flag:
-            self._log(row_fmt % self._get_row(micro, 'ALL'))
-        else:
-            self._log(row_fmt % self._get_row(macro, 'ALL'))
+        self._log(row_fmt % self._get_row(macro, 'All'))
 
     def _get_row(self, data, label):
         row = [label]
