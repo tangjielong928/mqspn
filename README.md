@@ -1,6 +1,6 @@
 # MQSPN
 
-Code for the paper accepted by AAAI 2025: "**Multi-Grained Query-Guided Set Prediction Network for Grounded Multimodal Named Entity Recognition**." ([Paper Link](https://arxiv.org/abs/2407.21033)).
+Code for the paper accepted by AAAI 2025: "**Multi-Grained Query-Guided Set Prediction Network for Grounded Multimodal Named Entity Recognition**." ([Paper Link](https://ojs.aaai.org/index.php/AAAI/article/view/34711)).
 
 ![](./assets/mqspn.png)
 
@@ -58,10 +58,13 @@ The datasets we used are from  [Yu et al.](https://github.com/NUSTM/GMNER/tree/m
 
 ## Citation
 ```bibtex
-@article{tang2024mqspn,
-  title={Multi-Grained Query-Guided Set Prediction Network for Grounded Multimodal Named Entity Recognition},
-  author={Tang, Jielong and Wang, Zhenxing and Gong, Ziyang and Yu, Jianxing and Wang, Shuang and Yin, Jian},
-  journal={arXiv preprint arXiv:2407.21033},
-  year={2024}
+@inproceedings{tang2025multi,
+  title={Multi-grained query-guided set prediction network for grounded multimodal named entity recognition},
+  author={Tang, Jielong and Wang, Zhenxing and Gong, Ziyang and Yu, Jianxing and Zhu, Xiangwei and Yin, Jian},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={39},
+  number={24},
+  pages={25246--25254},
+  year={2025}
 }
 ```
